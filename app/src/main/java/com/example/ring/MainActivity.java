@@ -1,44 +1,63 @@
 package com.example.ring;
 
-import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.os.Bundle;
-import android.os.SystemClock;
-import android.view.View;
-
+import android.widget.TextClock;
+import android.widget.TimePicker;
+import androidx.appcompat.app.AppCompatActivity;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
-    public Context context;
+
+    TimePicker alarmTime;
+    TextClock currentTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        context = this;
+
+        alarmTime = findViewById(R.id.timePicker);
+        currentTime = findViewById(R.id.textClock);
+        final Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE));
+
+        Timer t = new Timer();
+        t.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+
+                if (currentTime.getText().toString().equals(AlarmTime())){
+                    r.play();
+                }else{
+                    r.stop();
+                }
+            }
+        }, 0, 1000);
     }
 
-    public void click(View v) {
-        // String url = "https://www.google.fr";
-        // Intent intent = new Intent(Intent.ACTION_VIEW);
-        // intent.setData(Uri.parse(url));
-        // startActivity(i);
+    public String AlarmTime(){
 
+        Integer alarmHours = alarmTime.getCurrentHour();
+        Integer alarmMinutes = alarmTime.getCurrentMinute();
+        String stringAlarmMinutes;
 
-        AlarmManager alarmMgr;
-        PendingIntent alarmIntent;
-        alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(context, AlarmReceiver.class);
-        intent.putExtra("name", "dupont");
-        alarmIntent = PendingIntent.getBroadcast(context, 0, intent, '0');
+        if (alarmMinutes<10){
+            stringAlarmMinutes = "0";
+            stringAlarmMinutes = stringAlarmMinutes.concat(alarmMinutes.toString());
+        }else{
+            stringAlarmMinutes = alarmMinutes.toString();
+        }
+        String stringAlarmTime;
 
-
-        alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() +
-                        15 * 1000, alarmIntent);
+        if(alarmHours>12){
+            alarmHours = 12;
+            stringAlarmTime = alarmHours.toString().concat(":").concat(stringAlarmMinutes).concat(" PM");
+        }else{
+            stringAlarmTime = alarmHours.toString().concat(":").concat(stringAlarmMinutes).concat(" AM");
+        }
+        return stringAlarmTime;
     }
 }
